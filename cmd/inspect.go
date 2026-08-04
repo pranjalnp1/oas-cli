@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/yourusername/oas-cli/internal/service"
 )
 
 func init() {
@@ -18,7 +17,6 @@ var inspectCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("inspecting openApi spec...")
-		return nil
+		return service.Inspect(args[0])
 	},
 }
