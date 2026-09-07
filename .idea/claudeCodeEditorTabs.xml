@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="a82e50fc-3382-4e3a-a24e-40fd499716ab" />
+    <option name="activeSessionId" value="45dd0956-dff4-4260-9172-1c9495f23945" />
     <option name="openSessionIds">
       <list>
-        <option value="a82e50fc-3382-4e3a-a24e-40fd499716ab" />
+        <option value="45dd0956-dff4-4260-9172-1c9495f23945" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
-        <entry key="a82e50fc-3382-4e3a-a24e-40fd499716ab" value="/sessions/7ece9728-b67f-48d2-b822-abdbac1a1cee" />
+        <entry key="45dd0956-dff4-4260-9172-1c9495f23945" value="/sessions/90fec519-5dbd-46ca-ac96-1d1bc4c50dac" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
-        <entry key="a82e50fc-3382-4e3a-a24e-40fd499716ab" value="summarise what is in this codebase" />
+        <entry key="45dd0956-dff4-4260-9172-1c9495f23945" value="var summary = spec.Operation.Summary if summary" />
       </map>
     </option>
   </component>
