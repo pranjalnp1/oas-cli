@@ -77,6 +77,5 @@ func Inspect(File string, writer io.Writer) error {
 	for _, s := range spec.Servers {
 		fmt.Fprintln(writer, "-", s.URL)
 	}
-
 	return nil
 }
