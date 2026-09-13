@@ -9,6 +9,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Helper function for empty field logic for non-crucial fields.
+func orNA(s string) string {
+	if s == "" {
+		return "N/A"
+	}
+	return s
+}
+
+// Inspect function for inspecting OpenApi files.
 func Inspect(File string, writer io.Writer) error {
 	// load file
 	// parse spec
@@ -21,26 +30,53 @@ func Inspect(File string, writer io.Writer) error {
 
 	var spec api_types.OpenAPISpec
 	err = yaml.Unmarshal(data, &spec)
+
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(writer, "API:", spec.Info.Title)
 
-	for path := range spec.Paths {
-		fmt.Fprintln(writer, " ", path)
+	// logic and error handling for spec.OpenAPI in case file is not a OpenAPI spec.
+	var OpenApiVersion = spec.OpenAPI
+	if OpenApiVersion == "" {
+		return fmt.Errorf("invalid spec: missing required \"openapi\" field")
 	}
-
 	fmt.Fprintln(writer, "OpenApiVersion : ", spec.OpenAPI)
-	fmt.Fprintln(writer, "Title : ", spec.Info.Title)
-	fmt.Fprintln(writer, "Version : ", spec.Info.Version)
 
+	// output for title.
+	var title = spec.Info.Title
+	fmt.Fprintf(writer, "Title: %s\n", orNA(title))
+
+	// output for version.
+	var version = spec.Info.Version
+	fmt.Fprintf(writer, "Version: %s\n", orNA(version))
+
+	// output for summary.
 	var summary = spec.Operation.Summary
-	if summary == "" {
-		fmt.Fprintln(writer, "Summary : N/A")
-	} else {
-		fmt.Fprintln(writer, "Summary : ", summary)
+	fmt.Fprintf(writer, "Summary: %s\n", orNA(summary))
+
+	fmt.Println("-------------------------")
+	// output endpoints
+	fmt.Fprintln(writer, "Endpoints: ", len(spec.Paths))
+
+	// output for operations
+	count := 0
+	for _, item := range spec.Paths {
+		for _, op := range []*api_types.Operation{item.Get, item.Post, item.Put, item.Delete, item.Patch, item.Head, item.Options, item.Trace} {
+			if op != nil {
+				count++
+			}
+		}
+	}
+	fmt.Fprintln(writer, "Operations: ", count)
+
+	// output for schemas
+	fmt.Fprintln(writer, "Schemas: ", len(spec.Components.Schemas))
+
+	// output for servers
+	fmt.Println("------ Servers -------")
+	for _, s := range spec.Servers {
+		fmt.Fprintln(writer, "-", s.URL)
 	}
 
 	return nil
-
 }

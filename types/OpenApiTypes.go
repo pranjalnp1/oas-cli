@@ -17,14 +17,14 @@ type Info struct {
 	Version     string `yaml:"version"`
 }
 type PathItem struct {
-	Get    *Operation `yaml:"get"`
-	Post   *Operation `yaml:"post"`
-	Put    *Operation `yaml:"put"`
-	Delete *Operation `yaml:"delete"`
-	//Patch
-	//Head
-	//Options
-	//Trace
+	Get     *Operation `yaml:"get"`
+	Post    *Operation `yaml:"post"`
+	Put     *Operation `yaml:"put"`
+	Delete  *Operation `yaml:"delete"`
+	Patch   *Operation `yaml:"patch"`
+	Head    *Operation `yaml:"head"`
+	Options *Operation `yaml:"options"`
+	Trace   *Operation `yaml:"trace"`
 }
 type Operation struct {
 	Summary string `yaml:"summary"`
