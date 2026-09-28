@@ -9,7 +9,6 @@ type OpenAPISpec struct {
 	Servers    []Server            `yaml:"servers" json:"servers"`
 	Paths      map[string]PathItem `yaml:"paths"`
 	Components ComponentsObject    `yaml:"components"`
-	Operation  Operation           `yaml:"operation" json:"operation"`
 }
 type Info struct {
 	Title       string `yaml:"title"`
@@ -26,9 +25,26 @@ type PathItem struct {
 	Options *Operation `yaml:"options"`
 	Trace   *Operation `yaml:"trace"`
 }
+
+type Parameter struct {
+	Name     string `yaml:"name"`
+	In       string `yaml:"in"`
+	Required bool   `yaml:"required"`
+	Schema   struct {
+		Type string `yaml:"type"`
+	} `yaml:"schema"`
+}
+type Response struct {
+	Description string `yaml:"description"`
+	Content     map[string]struct {
+		Schema map[string]interface{} `yaml:"schema"` // holds $ref
+	} `yaml:"content"`
+}
 type Operation struct {
-	Summary string `yaml:"summary"`
-	// add more fields as needed
+	Summary     string              `yaml:"summary"`
+	Description string              `yaml:"description"`
+	Parameters  []Parameter         `yaml:"parameters"`
+	Responses   map[string]Response `yaml:"responses"`
 }
 type ComponentsObject struct {
 	Schemas map[string]interface{} `yaml:"schemas"`

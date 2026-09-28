@@ -51,10 +51,11 @@ func Inspect(File string, writer io.Writer) error {
 	fmt.Fprintf(writer, "Version: %s\n", orNA(version))
 
 	// output for summary.
-	var summary = spec.Operation.Summary
-	fmt.Fprintf(writer, "Summary: %s\n", orNA(summary))
+	var description = spec.Info.Description
+	fmt.Fprintf(writer, "Description: %s\n", orNA(description))
 
 	fmt.Println("-------------------------")
+
 	// output endpoints
 	fmt.Fprintln(writer, "Endpoints: ", len(spec.Paths))
 
