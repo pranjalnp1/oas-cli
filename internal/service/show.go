@@ -96,6 +96,5 @@ func Show(File string, Method string, Path string, writer io.Writer) error {
 			fmt.Fprintf(writer, "%s %s\n", code, schemaName)
 		}
 	}
-
 	return nil
 }
