@@ -8,6 +8,7 @@ import (
 
 	"github.com/yourusername/oas-cli/internal/loader"
 	"github.com/yourusername/oas-cli/internal/parser"
+	"github.com/yourusername/oas-cli/internal/resolver"
 	"github.com/yourusername/oas-cli/types"
 )
 
@@ -27,28 +28,16 @@ func exampleValueFor(schemaType string) interface{} {
 	}
 }
 
-// resolveSchema follows a single local $ref (e.g. "#/components/schemas/Pet")
-// into spec.Components.Schemas, returning the referenced schema object.
-func resolveSchema(spec *api_types.OpenAPISpec, schema map[string]interface{}) map[string]interface{} {
-	ref, ok := schema["$ref"].(string)
-	if !ok {
-		return schema
-	}
-	name := refName(ref)
-	resolved, ok := spec.Components.Schemas[name].(map[string]interface{})
-	if !ok {
-		return schema
-	}
-	return resolved
-}
-
 // exampleBody generates example JSON data from a schema's properties.
-func exampleBody(spec *api_types.OpenAPISpec, schema map[string]interface{}) map[string]interface{} {
-	schema = resolveSchema(spec, schema)
+func exampleBody(spec *api_types.OpenAPISpec, schema map[string]interface{}) (map[string]interface{}, error) {
+	schema, err := resolver.ResolveSchema(spec, schema)
+	if err != nil {
+		return nil, err
+	}
 
 	properties, ok := schema["properties"].(map[string]interface{})
 	if !ok {
-		return map[string]interface{}{}
+		return map[string]interface{}{}, nil
 	}
 
 	body := make(map[string]interface{})
@@ -60,7 +49,7 @@ func exampleBody(spec *api_types.OpenAPISpec, schema map[string]interface{}) map
 		propType, _ := prop["type"].(string)
 		body[name] = exampleValueFor(propType)
 	}
-	return body
+	return body, nil
 }
 
 func Curl(filename string, method string, path string, writer io.Writer) error {
@@ -119,7 +108,10 @@ func Curl(filename string, method string, path string, writer io.Writer) error {
 		return nil
 	}
 
-	body := exampleBody(spec, content.Schema)
+	body, err := exampleBody(spec, content.Schema)
+	if err != nil {
+		return err
+	}
 	bodyJSON, err := json.MarshalIndent(body, "    ", "  ")
 	if err != nil {
 		return err

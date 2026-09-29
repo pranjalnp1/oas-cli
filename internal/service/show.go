@@ -7,15 +7,9 @@ import (
 
 	"github.com/yourusername/oas-cli/internal/loader"
 	"github.com/yourusername/oas-cli/internal/parser"
+	"github.com/yourusername/oas-cli/internal/resolver"
 	"github.com/yourusername/oas-cli/types"
 )
-
-// refName extracts the trailing component name from a local $ref string,
-// e.g. "#/components/schemas/Pets" -> "Pets".
-func refName(ref string) string {
-	parts := strings.Split(ref, "/")
-	return parts[len(parts)-1]
-}
 
 // operationFor returns the *Operation matching method on the given PathItem, if any.
 func operationFor(item api_types.PathItem, method string) *api_types.Operation {
@@ -87,7 +81,11 @@ func Show(File string, Method string, Path string, writer io.Writer) error {
 		schemaName := ""
 		for _, content := range resp.Content {
 			if ref, ok := content.Schema["$ref"].(string); ok {
-				schemaName = refName(ref)
+				name, err := resolver.ResolveName(spec, ref)
+				if err != nil {
+					return err
+				}
+				schemaName = name
 			}
 		}
 		if schemaName == "" {
