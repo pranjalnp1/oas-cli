@@ -45,6 +45,14 @@ type Operation struct {
 	Description string              `yaml:"description"`
 	Parameters  []Parameter         `yaml:"parameters"`
 	Responses   map[string]Response `yaml:"responses"`
+	RequestBody *RequestBody        `yaml:"requestBody"`
+}
+
+type RequestBody struct {
+	Required bool `yaml:"required"`
+	Content  map[string]struct {
+		Schema map[string]interface{} `yaml:"schema"`
+	} `yaml:"content"`
 }
 type ComponentsObject struct {
 	Schemas map[string]interface{} `yaml:"schemas"`

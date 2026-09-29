@@ -5,8 +5,8 @@ import (
 	"io"
 
 	"github.com/yourusername/oas-cli/internal/loader"
+	"github.com/yourusername/oas-cli/internal/parser"
 	"github.com/yourusername/oas-cli/types"
-	"gopkg.in/yaml.v3"
 )
 
 // Helper function for empty field logic for non-crucial fields.
@@ -28,9 +28,7 @@ func Inspect(File string, writer io.Writer) error {
 		return err
 	}
 
-	var spec api_types.OpenAPISpec
-	err = yaml.Unmarshal(data, &spec)
-
+	spec, err := parser.Parse(data)
 	if err != nil {
 		return err
 	}
