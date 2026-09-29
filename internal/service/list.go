@@ -6,8 +6,8 @@ import (
 	"sort"
 
 	"github.com/yourusername/oas-cli/internal/loader"
+	"github.com/yourusername/oas-cli/internal/parser"
 	"github.com/yourusername/oas-cli/types"
-	"gopkg.in/yaml.v3"
 )
 
 func List(File string, writer io.Writer) error {
@@ -16,8 +16,8 @@ func List(File string, writer io.Writer) error {
 		return err
 	}
 
-	var spec api_types.OpenAPISpec
-	if err := yaml.Unmarshal(data, &spec); err != nil {
+	spec, err := parser.Parse(data)
+	if err != nil {
 		return err
 	}
 
