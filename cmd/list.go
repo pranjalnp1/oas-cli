@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/yourusername/oas-cli/internal/formatter"
 	"github.com/yourusername/oas-cli/internal/service"
 )
 
@@ -12,7 +12,14 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 }
 
-func listHandler(filename string, writer io.Writer) error { return service.List(filename, writer) }
+func listHandler(filename string) error {
+	result, err := service.List(filename)
+	if err != nil {
+		return err
+	}
+	formatter.FormatList(os.Stdout, result)
+	return nil
+}
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -20,5 +27,5 @@ var listCmd = &cobra.Command{
 	Long:  `Lists every operation (method + path) defined in the openApi spec.`,
 	Args:  cobra.ExactArgs(1),
 
-	RunE: func(cmd *cobra.Command, args []string) error { return listHandler(args[0], os.Stdout) },
+	RunE: func(cmd *cobra.Command, args []string) error { return listHandler(args[0]) },
 }

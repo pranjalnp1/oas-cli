@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/yourusername/oas-cli/internal/loader"
@@ -52,28 +51,30 @@ func exampleBody(spec *api_types.OpenAPISpec, schema map[string]interface{}) (ma
 	return body, nil
 }
 
-func Curl(filename string, method string, path string, writer io.Writer) error {
-	data, err := loader.Load(filename)
+// Curl loads and parses an OpenAPI spec and assembles an example request for one operation.
+func Curl(file string, method string, path string) (*CurlResult, error) {
+	data, err := loader.Load(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	spec, err := parser.Parse(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	item, ok := spec.Paths[path]
 	if !ok {
-		return fmt.Errorf("path not found: %s", path)
+		return nil, fmt.Errorf("path not found: %s", path)
 	}
 
 	op := operationFor(item, method)
 	if op == nil {
-		return fmt.Errorf("method %s not defined for path %s", strings.ToUpper(method), path)
+		return nil, fmt.Errorf("method %s not defined for path %s", strings.ToUpper(method), path)
 	}
 
 	if len(spec.Servers) == 0 {
-		return fmt.Errorf("no servers defined in spec")
+		return nil, fmt.Errorf("no servers defined in spec")
 	}
 	baseURL := spec.Servers[0].URL
 
@@ -94,32 +95,32 @@ func Curl(filename string, method string, path string, writer io.Writer) error {
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	fmt.Fprintln(writer, "curl \\")
-	fmt.Fprintf(writer, "  -X %s \\\n", strings.ToUpper(method))
+	result := &CurlResult{
+		Method:  strings.ToUpper(method),
+		URL:     url,
+		Headers: map[string]string{},
+	}
 
 	if op.RequestBody == nil {
-		fmt.Fprintf(writer, "  \"%s\"\n", url)
-		return nil
+		return result, nil
 	}
 
 	content, ok := op.RequestBody.Content["application/json"]
 	if !ok {
-		fmt.Fprintf(writer, "  \"%s\"\n", url)
-		return nil
+		return result, nil
 	}
 
 	body, err := exampleBody(spec, content.Schema)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	bodyJSON, err := json.MarshalIndent(body, "    ", "  ")
+	bodyJSON, err := json.MarshalIndent(body, "", "  ")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Fprintf(writer, "  \"%s\" \\\n", url)
-	fmt.Fprintln(writer, "  -H \"Content-Type: application/json\" \\")
-	fmt.Fprintf(writer, "  -d '%s'\n", bodyJSON)
+	result.Headers["Content-Type"] = "application/json"
+	result.Body = string(bodyJSON)
 
-	return nil
+	return result, nil
 }
