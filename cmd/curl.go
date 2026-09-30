@@ -8,12 +8,15 @@ import (
 	"github.com/yourusername/oas-cli/internal/service"
 )
 
+var curlBaseURL string
+
 func init() {
+	curlCmd.Flags().StringVar(&curlBaseURL, "base-url", "", "override the server URL (required if the spec's server URL is relative)")
 	rootCmd.AddCommand(curlCmd)
 }
 
-func curlHandler(filename string, method string, path string) error {
-	result, err := service.Curl(filename, method, path)
+func curlHandler(filename string, method string, path string, baseURL string) error {
+	result, err := service.Curl(filename, method, path, baseURL)
 	if err != nil {
 		return err
 	}
@@ -28,6 +31,6 @@ var curlCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(3),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return curlHandler(args[0], args[1], args[2])
+		return curlHandler(args[0], args[1], args[2], curlBaseURL)
 	},
 }
