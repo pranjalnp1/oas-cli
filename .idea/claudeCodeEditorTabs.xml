@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="a498708b-d779-4236-8f86-387706409b21" />
+    <option name="activeSessionId" value="cff1b11c-44e9-4ede-ae2e-9f6e114ac1a7" />
     <option name="openSessionIds">
       <list>
         <option value="ea584e06-c104-4f68-a26f-b768776052f6" />
         <option value="6c2f3ab4-e49e-412a-acc1-383e6ca0a53f" />
-        <option value="a498708b-d779-4236-8f86-387706409b21" />
+        <option value="cff1b11c-44e9-4ede-ae2e-9f6e114ac1a7" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
         <entry key="6c2f3ab4-e49e-412a-acc1-383e6ca0a53f" value="/sessions/e22d56d8-2f0f-43cc-ad32-1d460ee0d16e" />
-        <entry key="a498708b-d779-4236-8f86-387706409b21" value="/sessions/e22d56d8-2f0f-43cc-ad32-1d460ee0d16e" />
+        <entry key="cff1b11c-44e9-4ede-ae2e-9f6e114ac1a7" value="/sessions/e22d56d8-2f0f-43cc-ad32-1d460ee0d16e" />
         <entry key="ea584e06-c104-4f68-a26f-b768776052f6" value="/sessions/90fec519-5dbd-46ca-ac96-1d1bc4c50dac" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
         <entry key="6c2f3ab4-e49e-412a-acc1-383e6ca0a53f" value="# OpenAPI CLI — Project Specification ## 1. Projec" />
-        <entry key="a498708b-d779-4236-8f86-387706409b21" value="# OpenAPI CLI — Project Specification ## 1. Projec" />
+        <entry key="cff1b11c-44e9-4ede-ae2e-9f6e114ac1a7" value="# OpenAPI CLI — Project Specification ## 1. Projec" />
         <entry key="ea584e06-c104-4f68-a26f-b768776052f6" value="var summary = spec.Operation.Summary if summary ==" />
       </map>
     </option>

@@ -2,79 +2,50 @@ package service
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/yourusername/oas-cli/internal/loader"
 	"github.com/yourusername/oas-cli/internal/parser"
 	"github.com/yourusername/oas-cli/types"
 )
 
-// Helper function for empty field logic for non-crucial fields.
-func orNA(s string) string {
-	if s == "" {
-		return "N/A"
-	}
-	return s
-}
-
-// Inspect function for inspecting OpenApi files.
-func Inspect(File string, writer io.Writer) error {
-	// load file
-	// parse spec
-	// calculate information
-	// print output
-	data, err := loader.Load(File)
+// Inspect loads and parses an OpenAPI spec and computes its summary data.
+func Inspect(file string) (*InspectResult, error) {
+	data, err := loader.Load(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	spec, err := parser.Parse(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// logic and error handling for spec.OpenAPI in case file is not a OpenAPI spec.
-	var OpenApiVersion = spec.OpenAPI
-	if OpenApiVersion == "" {
-		return fmt.Errorf("invalid spec: missing required \"openapi\" field")
+	if spec.OpenAPI == "" {
+		return nil, fmt.Errorf("invalid spec: missing required \"openapi\" field")
 	}
-	fmt.Fprintln(writer, "OpenApiVersion : ", spec.OpenAPI)
 
-	// output for title.
-	var title = spec.Info.Title
-	fmt.Fprintf(writer, "Title: %s\n", orNA(title))
-
-	// output for version.
-	var version = spec.Info.Version
-	fmt.Fprintf(writer, "Version: %s\n", orNA(version))
-
-	// output for summary.
-	var description = spec.Info.Description
-	fmt.Fprintf(writer, "Description: %s\n", orNA(description))
-
-	fmt.Println("-------------------------")
-
-	// output endpoints
-	fmt.Fprintln(writer, "Endpoints: ", len(spec.Paths))
-
-	// output for operations
-	count := 0
+	operationCount := 0
 	for _, item := range spec.Paths {
 		for _, op := range []*api_types.Operation{item.Get, item.Post, item.Put, item.Delete, item.Patch, item.Head, item.Options, item.Trace} {
 			if op != nil {
-				count++
+				operationCount++
 			}
 		}
 	}
-	fmt.Fprintln(writer, "Operations: ", count)
 
-	// output for schemas
-	fmt.Fprintln(writer, "Schemas: ", len(spec.Components.Schemas))
-
-	// output for servers
-	fmt.Println("------ Servers -------")
+	servers := make([]string, 0, len(spec.Servers))
 	for _, s := range spec.Servers {
-		fmt.Fprintln(writer, "-", s.URL)
+		servers = append(servers, s.URL)
 	}
-	return nil
+
+	return &InspectResult{
+		OpenAPIVersion: spec.OpenAPI,
+		Title:          spec.Info.Title,
+		Version:        spec.Info.Version,
+		Description:    spec.Info.Description,
+		Endpoints:      len(spec.Paths),
+		Operations:     operationCount,
+		Schemas:        len(spec.Components.Schemas),
+		Servers:        servers,
+	}, nil
 }

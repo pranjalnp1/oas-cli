@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/yourusername/oas-cli/internal/formatter"
 	"github.com/yourusername/oas-cli/internal/service"
 )
 
@@ -12,8 +12,13 @@ func init() {
 	rootCmd.AddCommand(inspectCmd)
 }
 
-func inspectHandler(filename string, writer io.Writer) error {
-	return service.Inspect(filename, writer)
+func inspectHandler(filename string) error {
+	result, err := service.Inspect(filename)
+	if err != nil {
+		return err
+	}
+	formatter.FormatInspect(os.Stdout, result)
+	return nil
 }
 
 // definition for the inspect command
@@ -24,6 +29,6 @@ var inspectCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return inspectHandler(args[0], os.Stdout)
+		return inspectHandler(args[0])
 	},
 }

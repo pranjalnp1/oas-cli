@@ -2,20 +2,14 @@ package service
 
 import (
 	"fmt"
-	"io"
+	"sort"
 	"strings"
 
 	"github.com/yourusername/oas-cli/internal/loader"
 	"github.com/yourusername/oas-cli/internal/parser"
+	"github.com/yourusername/oas-cli/internal/resolver"
 	"github.com/yourusername/oas-cli/types"
 )
-
-// refName extracts the trailing component name from a local $ref string,
-// e.g. "#/components/schemas/Pets" -> "Pets".
-func refName(ref string) string {
-	parts := strings.Split(ref, "/")
-	return parts[len(parts)-1]
-}
 
 // operationFor returns the *Operation matching method on the given PathItem, if any.
 func operationFor(item api_types.PathItem, method string) *api_types.Operation {
@@ -41,60 +35,65 @@ func operationFor(item api_types.PathItem, method string) *api_types.Operation {
 	}
 }
 
-func Show(File string, Method string, Path string, writer io.Writer) error {
-	data, err := loader.Load(File)
+// Show loads and parses an OpenAPI spec and computes detail data for one operation.
+func Show(file string, method string, path string) (*ShowResult, error) {
+	data, err := loader.Load(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	spec, err := parser.Parse(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	item, ok := spec.Paths[Path]
+	item, ok := spec.Paths[path]
 	if !ok {
-		return fmt.Errorf("path not found: %s", Path)
+		return nil, fmt.Errorf("path not found: %s", path)
 	}
 
-	op := operationFor(item, Method)
+	op := operationFor(item, method)
 	if op == nil {
-		return fmt.Errorf("method %s not defined for path %s", strings.ToUpper(Method), Path)
+		return nil, fmt.Errorf("method %s not defined for path %s", strings.ToUpper(method), path)
 	}
 
-	fmt.Fprintf(writer, "%s %s\n\n", strings.ToUpper(Method), Path)
-
-	fmt.Fprintln(writer, "Summary:")
-	fmt.Fprintln(writer, orNA(op.Summary))
-	fmt.Fprintln(writer)
-
-	fmt.Fprintln(writer, "Parameters:")
-	if len(op.Parameters) == 0 {
-		fmt.Fprintln(writer, "(none)")
-	} else {
-		for _, p := range op.Parameters {
-			required := "optional"
-			if p.Required {
-				required = "required"
-			}
-			fmt.Fprintf(writer, "- %s (%s, %s, %s)\n", p.Name, p.In, required, orNA(p.Schema.Type))
-		}
+	parameters := make([]ParameterView, 0, len(op.Parameters))
+	for _, p := range op.Parameters {
+		parameters = append(parameters, ParameterView{
+			Name:     p.Name,
+			In:       p.In,
+			Required: p.Required,
+			Type:     p.Schema.Type,
+		})
 	}
-	fmt.Fprintln(writer)
 
-	fmt.Fprintln(writer, "Responses:")
-	for code, resp := range op.Responses {
+	codes := make([]string, 0, len(op.Responses))
+	for code := range op.Responses {
+		codes = append(codes, code)
+	}
+	sort.Strings(codes)
+
+	responses := make([]ResponseView, 0, len(op.Responses))
+	for _, code := range codes {
+		resp := op.Responses[code]
 		schemaName := ""
 		for _, content := range resp.Content {
 			if ref, ok := content.Schema["$ref"].(string); ok {
-				schemaName = refName(ref)
+				name, err := resolver.ResolveName(spec, ref)
+				if err != nil {
+					return nil, err
+				}
+				schemaName = name
 			}
 		}
-		if schemaName == "" {
-			fmt.Fprintf(writer, "%s (no content)\n", code)
-		} else {
-			fmt.Fprintf(writer, "%s %s\n", code, schemaName)
-		}
+		responses = append(responses, ResponseView{Code: code, SchemaName: schemaName})
 	}
-	return nil
+
+	return &ShowResult{
+		Method:     strings.ToUpper(method),
+		Path:       path,
+		Summary:    op.Summary,
+		Parameters: parameters,
+		Responses:  responses,
+	}, nil
 }

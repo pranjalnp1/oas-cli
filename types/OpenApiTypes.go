@@ -31,7 +31,8 @@ type Parameter struct {
 	In       string `yaml:"in"`
 	Required bool   `yaml:"required"`
 	Schema   struct {
-		Type string `yaml:"type"`
+		Type string   `yaml:"type"`
+		Enum []string `yaml:"enum"`
 	} `yaml:"schema"`
 }
 type Response struct {

@@ -1,19 +1,27 @@
 package cmd
 
 import (
-	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/yourusername/oas-cli/internal/formatter"
 	"github.com/yourusername/oas-cli/internal/service"
 )
 
+var curlBaseURL string
+
 func init() {
+	curlCmd.Flags().StringVar(&curlBaseURL, "base-url", "", "override the server URL (required if the spec's server URL is relative)")
 	rootCmd.AddCommand(curlCmd)
 }
 
-func curlHandler(filename string, method string, path string, writer io.Writer) error {
-	return service.Curl(filename, method, path, writer)
+func curlHandler(filename string, method string, path string, baseURL string) error {
+	result, err := service.Curl(filename, method, path, baseURL)
+	if err != nil {
+		return err
+	}
+	formatter.FormatCurl(os.Stdout, result)
+	return nil
 }
 
 var curlCmd = &cobra.Command{
@@ -23,6 +31,6 @@ var curlCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(3),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return curlHandler(args[0], args[1], args[2], os.Stdout)
+		return curlHandler(args[0], args[1], args[2], curlBaseURL)
 	},
 }

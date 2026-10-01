@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-	"io"
 	"sort"
 
 	"github.com/yourusername/oas-cli/internal/loader"
@@ -10,15 +8,16 @@ import (
 	"github.com/yourusername/oas-cli/types"
 )
 
-func List(File string, writer io.Writer) error {
-	data, err := loader.Load(File)
+// List loads and parses an OpenAPI spec and returns every operation it defines.
+func List(file string) (*ListResult, error) {
+	data, err := loader.Load(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	spec, err := parser.Parse(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	paths := make([]string, 0, len(spec.Paths))
@@ -27,6 +26,7 @@ func List(File string, writer io.Writer) error {
 	}
 	sort.Strings(paths)
 
+	var operations []OperationSummary
 	for _, path := range paths {
 		item := spec.Paths[path]
 		methods := []struct {
@@ -34,12 +34,14 @@ func List(File string, writer io.Writer) error {
 			op   *api_types.Operation
 		}{
 			{"GET", item.Get}, {"POST", item.Post}, {"PUT", item.Put}, {"DELETE", item.Delete},
+			{"PATCH", item.Patch}, {"HEAD", item.Head}, {"OPTIONS", item.Options}, {"TRACE", item.Trace},
 		}
 		for _, m := range methods {
 			if m.op != nil {
-				fmt.Fprintf(writer, "%-7s %s\n", m.name, path)
+				operations = append(operations, OperationSummary{Method: m.name, Path: path})
 			}
 		}
 	}
-	return nil
+
+	return &ListResult{Operations: operations}, nil
 }
