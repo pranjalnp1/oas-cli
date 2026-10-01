@@ -8,7 +8,7 @@ import (
 	"github.com/yourusername/oas-cli/types"
 )
 
-// Inspect loads and parses an OpenAPI spec and computes its summary data.
+// Inspect loads and parses an OpenAPI spec from a local file and computes its summary data.
 func Inspect(file string) (*InspectResult, error) {
 	data, err := loader.Load(file)
 	if err != nil {
@@ -20,6 +20,13 @@ func Inspect(file string) (*InspectResult, error) {
 		return nil, err
 	}
 
+	return InspectSpec(spec)
+}
+
+// InspectSpec computes summary data for an already-parsed spec. Used by the
+// CLI (via Inspect) and directly by the HTTP API, which parses an uploaded
+// spec in memory rather than reading it from a local file.
+func InspectSpec(spec *api_types.OpenAPISpec) (*InspectResult, error) {
 	if spec.OpenAPI == "" {
 		return nil, fmt.Errorf("invalid spec: missing required \"openapi\" field")
 	}

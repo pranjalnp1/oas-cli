@@ -104,11 +104,8 @@ func exampleBody(spec *api_types.OpenAPISpec, schema map[string]interface{}) (ma
 	return body, nil
 }
 
-// Curl loads and parses an OpenAPI spec and assembles an example request for one operation.
-// If baseURLOverride is non-empty, it is used instead of the spec's first server URL —
-// this is needed when the spec declares a relative server URL (e.g. "/api/v3"), since
-// a relative server is only resolvable against wherever the document was originally
-// served from, information a local spec file does not carry.
+// Curl loads and parses an OpenAPI spec from a local file and assembles an
+// example request for one operation.
 func Curl(file string, method string, path string, baseURLOverride string) (*CurlResult, error) {
 	data, err := loader.Load(file)
 	if err != nil {
@@ -120,6 +117,16 @@ func Curl(file string, method string, path string, baseURLOverride string) (*Cur
 		return nil, err
 	}
 
+	return CurlSpec(spec, method, path, baseURLOverride)
+}
+
+// CurlSpec assembles an example request for one operation on an
+// already-parsed spec. If baseURLOverride is non-empty, it is used instead
+// of the spec's first server URL — this is needed when the spec declares a
+// relative server URL (e.g. "/api/v3"), since a relative server is only
+// resolvable against wherever the document was originally served from,
+// information neither a local spec file nor an uploaded one carries.
+func CurlSpec(spec *api_types.OpenAPISpec, method string, path string, baseURLOverride string) (*CurlResult, error) {
 	item, ok := spec.Paths[path]
 	if !ok {
 		return nil, fmt.Errorf("path not found: %s", path)

@@ -35,7 +35,8 @@ func operationFor(item api_types.PathItem, method string) *api_types.Operation {
 	}
 }
 
-// Show loads and parses an OpenAPI spec and computes detail data for one operation.
+// Show loads and parses an OpenAPI spec from a local file and computes detail
+// data for one operation.
 func Show(file string, method string, path string) (*ShowResult, error) {
 	data, err := loader.Load(file)
 	if err != nil {
@@ -47,6 +48,12 @@ func Show(file string, method string, path string) (*ShowResult, error) {
 		return nil, err
 	}
 
+	return ShowSpec(spec, method, path)
+}
+
+// ShowSpec computes detail data for one operation on an already-parsed spec.
+// Used by the CLI (via Show) and directly by the HTTP API.
+func ShowSpec(spec *api_types.OpenAPISpec, method string, path string) (*ShowResult, error) {
 	item, ok := spec.Paths[path]
 	if !ok {
 		return nil, fmt.Errorf("path not found: %s", path)

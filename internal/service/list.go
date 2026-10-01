@@ -8,7 +8,8 @@ import (
 	"github.com/yourusername/oas-cli/types"
 )
 
-// List loads and parses an OpenAPI spec and returns every operation it defines.
+// List loads and parses an OpenAPI spec from a local file and returns every
+// operation it defines.
 func List(file string) (*ListResult, error) {
 	data, err := loader.Load(file)
 	if err != nil {
@@ -20,6 +21,12 @@ func List(file string) (*ListResult, error) {
 		return nil, err
 	}
 
+	return ListSpec(spec)
+}
+
+// ListSpec computes the operation list for an already-parsed spec. Used by
+// the CLI (via List) and directly by the HTTP API.
+func ListSpec(spec *api_types.OpenAPISpec) (*ListResult, error) {
 	paths := make([]string, 0, len(spec.Paths))
 	for path := range spec.Paths {
 		paths = append(paths, path)

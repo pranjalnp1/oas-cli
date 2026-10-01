@@ -1,0 +1,9 @@
+openapi: "3.0.0"
+info:
+  title: Broken Spec
+  version: 1.0.0
+paths:
+  /pets:
+    get:
+    summary: "this is indented incorrectly and breaks YAML"
+      responses:
