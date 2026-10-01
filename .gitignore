@@ -1,0 +1,5 @@
+/main
+/oas-cli
+*.exe
+.env
+.env.local
